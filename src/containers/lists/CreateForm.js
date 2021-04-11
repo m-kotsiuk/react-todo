@@ -1,13 +1,36 @@
 import React from 'react';
 
+import { connect } from 'react-redux';
+
+import { createList } from '../../store/actions/activeList/index';
+
+
 import { Form, Input, Button, Typography, Row, Col } from 'antd';
+
+import axios from 'axios';
+
+import { FIREBASE_DB_URL } from '../../config';
 
 const { Title } = Typography;
 
 
-const Create = () => {
+const CreateForm = props => {
+
     const onFinish = values => {
-        console.log('Success:', values);
+        const { title } = values; 
+
+        axios
+        .post(`${FIREBASE_DB_URL}lists/${props.userId}.json?auth=${props.accessToken}`, {
+            title,
+            userId: props.userId
+        })
+        .then(() => {
+           props.history.push('/');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+        
     };
 
 
@@ -44,4 +67,12 @@ const Create = () => {
     );
 }
 
-export default Create;
+const mapStateToProps = state => {
+    return {
+        userId: state.auth.userId,
+        accessToken: state.auth.token
+    }
+};
+
+
+export default connect(mapStateToProps)(CreateForm);

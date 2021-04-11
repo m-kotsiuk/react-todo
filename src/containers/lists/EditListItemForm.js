@@ -1,14 +1,50 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router';
 
 import { Form, Input, Select, Button } from 'antd';
+import axios from 'axios';
+import { connect } from 'react-redux';
+import { FIREBASE_DB_URL } from '../../config';
 
 
 const { Option } = Select;
 
-const Edit = () => {
+const EditListItemForm = props => {
+
+    const { id, itemId } = useParams();
+
+    const [form] = Form.useForm();
+
+    useEffect(() => {
+        axios
+            .get(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json?auth=${props.accessToken}`)
+            .then(resp => {
+                const { heading, description, status } = resp.data;
+
+                form.setFieldsValue({
+                    heading, 
+                    description, 
+                    status
+                });
+
+                
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }, []);
 
     const onFinish = values => {
-        console.log('Success:', values);
+        axios
+            .put(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json?auth=${props.accessToken}`, {
+                ...values
+            })
+            .then(() => {
+                props.history.push('/list/' + id);
+            })
+            .catch(err => {
+                console.log(err);
+            });
     };
 
 
@@ -17,6 +53,7 @@ const Edit = () => {
             layout="vertical"
             onFinish={onFinish}
             noValidate
+            form={form}
         >
             <Form.Item
                 label="Heading"
@@ -56,7 +93,7 @@ const Edit = () => {
                     }
                 ]}
             >
-                    <Select>
+                <Select>
                     <Option value="todo">To Do</Option>
                     <Option value="in_progress">In Progress</Option>
                     <Option value="done">Done</Option>
@@ -64,11 +101,19 @@ const Edit = () => {
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit">
-                    Add New Item
+                    Submit
                 </Button>
             </Form.Item>
         </Form>
     );
 }
 
-export default Edit;
+const mapStateToProps = state => {
+    return {
+        userId: state.auth.userId,
+        accessToken: state.auth.token
+    }
+};
+
+
+export default connect(mapStateToProps)(EditListItemForm)

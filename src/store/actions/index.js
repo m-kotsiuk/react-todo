@@ -9,3 +9,7 @@ export const authActions = {
     logout,
     check
 };
+
+
+
+// export * from './auth/index'

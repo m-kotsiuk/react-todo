@@ -47,7 +47,7 @@ const App = props => {
             >Login/Register</NavLink>
           </Menu.Item>}
           {isAuthenticated && 
-          <Menu.Item key="logout">
+          <Menu.Item>
             <NavLink
               to="/logout"
               exact
@@ -62,8 +62,6 @@ const App = props => {
         {routes}
         </div>
       </Content>
-
-
       <Footer><strong>Todo lists</strong> &copy;{ new Date().getFullYear() }</Footer>
     </Layout>
   );
