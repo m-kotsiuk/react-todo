@@ -1,47 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Collapse,  Menu, Dropdown, Typography, Button } from 'antd';
+import { Collapse,  Menu, Dropdown, Typography, Button, Space } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import { FIREBASE_DB_URL } from '../../config';
 import { useParams } from 'react-router';
 
 import { connect } from 'react-redux';
+import { listsActions } from '../../store/actions';
 
 const { Panel } = Collapse;
 
-const { Text, Title } = Typography;
+const { Text, Title, Link } = Typography;
 
 const SingleList = props => {
 
     const { id } = useParams();
 
-    const [title, setTitle] = useState('');
+    const { lists, userId, accessToken, onDeleteListItem, onDeleteList, history } = props;
 
-    const [items, setItems] = useState([]);
+    const targetList = lists && lists.find(el => el.id === id);
+
+    let title = '';
+
+    let items = [];
+
+    if (targetList) {
+        title = targetList.title;
+        items = targetList.items || [];
+    }
+
 
     const deleteList = () => {
-        axios
-                .delete(`${FIREBASE_DB_URL}lists/${props.userId}/${id}.json`)
-                .then(() => {
-                    props.history.push('/');
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+        onDeleteList(userId, accessToken, id, history);
     };
 
     const options = itemId => {
 
         const deleteTask = () => {
-            axios
-                .delete(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json`)
-                .then(() => {
-                    setItems(items.filter(el => el.id !== itemId));
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            console.log('DELETING', userId, accessToken, id, itemId);
+            onDeleteListItem(userId, accessToken, id, itemId)
         };
 
         const menu = (
@@ -53,9 +49,9 @@ const SingleList = props => {
 
         return (
             <Dropdown overlay={menu}>
-                <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+                <Link className="ant-dropdown-link" onClick={e => e.preventDefault()}>
                 Options <DownOutlined />
-                </a>
+                </Link>
             </Dropdown>
         );
     };
@@ -83,40 +79,21 @@ const SingleList = props => {
         );
     }
 
-    useEffect(() => {
-        axios
-            .get(`${FIREBASE_DB_URL}lists/${id}.json?auth=${props.accessToken}`)
-            .then(resp => {
-                setTitle(resp.data.title);
-                const arr = [];
+    
 
-                Object.keys(resp.data.items).forEach(key => {
-                    const obj = resp.data.items[key];
-                    obj.id = key;
-                    arr.push(obj);
-                });
 
-                setItems(arr);
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }, []);
 
     return (
-        <>
-            <Title>{ title }</Title>
-
-            <div>
-                <Button
-                    type="primary"
-                >
-                    <NavLink
-                        to={`/list/${id}/edit`}
-                        exact
-                    >Edit List Title</NavLink>
-                </Button>
-            </div>
+        <Space direction="vertical" size="middle" style={{width: '100%'}}>
+            <Title style={{marginBottom: 0}}>{ title }</Title>
+            <Button
+                type="primary"
+            >
+                <NavLink
+                    to={`/list/${id}/edit`}
+                    exact
+                >Edit List Title</NavLink>
+            </Button>
             {items.length ? 
             <Collapse defaultActiveKey={[0]}>
                 { items.map((item, index) => (
@@ -130,11 +107,11 @@ const SingleList = props => {
                 )) }
             </Collapse>
             :
-            <div>This list has no items yet...</div>
+            <p>This list has no items yet...</p>
             }
             
 
-            <div>
+            <Space>
                 <Button
                     type="primary"
                 >
@@ -148,8 +125,8 @@ const SingleList = props => {
                     type="danger"
                     onClick={deleteList}
                 >Delete list</Button>
-            </div>
-        </>
+            </Space>
+        </Space>
     );
 }
 
@@ -157,9 +134,17 @@ const SingleList = props => {
 const mapStateToProps = state => {
     return {
         userId: state.auth.userId,
-        accessToken: state.auth.token
+        accessToken: state.auth.token,
+        lists: state.lists.lists
     }
 };
 
+const mapDispatchToProps = dispatch => {
+    return {
+        onDeleteList: (userId, accessToken, listId, history) => dispatch(listsActions.deleteList(userId, accessToken, listId, history)),
+        onDeleteListItem: (userId, accessToken, listId, listItemId) => dispatch(listsActions.deleteListItem(userId, accessToken, listId, listItemId))
+    };
+};
+  
 
-export default connect(mapStateToProps)(SingleList);
+export default connect(mapStateToProps, mapDispatchToProps)(SingleList);

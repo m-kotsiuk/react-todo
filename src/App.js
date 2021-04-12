@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { withRouter, NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Layout, Menu } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { FormOutlined } from '@ant-design/icons';
 
 import getRoutes from './routes';
 import { authActions } from './store/actions/index';
@@ -12,15 +12,15 @@ import { authActions } from './store/actions/index';
 
 const App = props => {
 
-  const { isAuthenticated } = props;
+  const { isAuthenticated, onLoginAttempt } = props;
 
   const routes =  getRoutes(isAuthenticated);
 
   const { Header, Content, Footer } = Layout;
 
   useEffect(() => {
-    props.onLoginAttempt();
-  }, []);
+    onLoginAttempt();
+  }, [onLoginAttempt]);
 
   return (
     <Layout style={{
@@ -33,26 +33,34 @@ const App = props => {
         }}
        >
         <Menu mode="horizontal">
-          <Menu.Item key="lists" icon={<MailOutlined />}>
-            <NavLink
-              to="/"
-              exact
-            >My lists</NavLink>
-          </Menu.Item>
-          {!isAuthenticated && 
-          <Menu.Item key="auth">
-            <NavLink
-              to="/auth"
-              exact
-            >Login/Register</NavLink>
-          </Menu.Item>}
-          {isAuthenticated && 
-          <Menu.Item>
-            <NavLink
-              to="/logout"
-              exact
-            >Logout</NavLink>
-          </Menu.Item>}
+          {
+            isAuthenticated ?
+              (
+                <>
+                  <Menu.Item icon={<FormOutlined />}>
+                    <NavLink
+                      to="/"
+                      exact
+                    >My lists</NavLink>
+                  </Menu.Item>
+                  <Menu.Item>
+                    <NavLink
+                      to="/logout"
+                      exact
+                    >Logout</NavLink>
+                  </Menu.Item>
+                </>
+              )
+              :
+              (
+                <Menu.Item>
+                  <NavLink
+                    to="/auth"
+                    exact
+                  >Login/Register</NavLink>
+                </Menu.Item>
+              )
+          }
         </Menu>
       </Header>
       

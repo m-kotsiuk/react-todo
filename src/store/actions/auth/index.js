@@ -2,13 +2,13 @@ import * as types from './types';
 import axios from 'axios';
 import { FIREBASE_API_KEY } from '../../../config';
 
-export const authStart = () => {
+const authStart = () => {
     return {
         type: types.AUTH_START
     };
 };
 
-export const authSuccess = (token, userId) => {
+const authSuccess = (token, userId) => {
     return {
         type: types.AUTH_SUCCESS,
         token,
@@ -16,7 +16,7 @@ export const authSuccess = (token, userId) => {
     };
 };
 
-export const authFail = err => {
+const authFail = err => {
     return {
         type: types.AUTH_FAIL,
         error: err

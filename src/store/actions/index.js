@@ -1,15 +1,5 @@
-import {
-    auth,
-    logout,
-    check
-} from './auth/index';
-
-export const authActions = {
-    auth,
-    logout,
-    check
-};
+export * as authActions from './auth/index';
+export * as listsActions from './lists/index'
 
 
 
-// export * from './auth/index'

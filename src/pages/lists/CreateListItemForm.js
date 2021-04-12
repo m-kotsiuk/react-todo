@@ -1,50 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router';
 
 import { Form, Input, Select, Button } from 'antd';
-import axios from 'axios';
 import { connect } from 'react-redux';
-import { FIREBASE_DB_URL } from '../../config';
+
+import { listsActions } from '../../store/actions/index';
 
 
 const { Option } = Select;
 
 const EditListItemForm = props => {
 
-    const { id, itemId } = useParams();
+    const { id } = useParams();
 
-    const [form] = Form.useForm();
-
-    useEffect(() => {
-        axios
-            .get(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json?auth=${props.accessToken}`)
-            .then(resp => {
-                const { heading, description, status } = resp.data;
-
-                form.setFieldsValue({
-                    heading, 
-                    description, 
-                    status
-                });
-
-                
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }, []);
+    const { accessToken, userId, history, onCreateListItem } = props;
 
     const onFinish = values => {
-        axios
-            .put(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json?auth=${props.accessToken}`, {
-                ...values
-            })
-            .then(() => {
-                props.history.push('/list/' + id);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        onCreateListItem(userId, accessToken, id, values, history);
     };
 
 
@@ -53,7 +25,6 @@ const EditListItemForm = props => {
             layout="vertical"
             onFinish={onFinish}
             noValidate
-            form={form}
         >
             <Form.Item
                 label="Heading"
@@ -93,7 +64,7 @@ const EditListItemForm = props => {
                     }
                 ]}
             >
-                <Select>
+                    <Select>
                     <Option value="todo">To Do</Option>
                     <Option value="in_progress">In Progress</Option>
                     <Option value="done">Done</Option>
@@ -101,7 +72,7 @@ const EditListItemForm = props => {
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit">
-                    Submit
+                    Add New Item
                 </Button>
             </Form.Item>
         </Form>
@@ -116,4 +87,11 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps)(EditListItemForm)
+const mapDispatchToProps = dispatch => {
+    return {
+        onCreateListItem: (userId, accessToken, id, params, history) => dispatch(listsActions.createListItem(userId, accessToken, id, params, history))
+    };
+};
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditListItemForm);

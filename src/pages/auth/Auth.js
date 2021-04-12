@@ -11,7 +11,6 @@ const Auth = props => {
     const [signupMode, setSignupMode] = useState(true);
 
     const onFinish = values => {
-        console.log('Success:', values);
         const { email, password} = values; 
         props.onAuth(email, password, signupMode);
     };
@@ -34,7 +33,7 @@ const Auth = props => {
             <Col xs={{span: 24}} md={{span: 12, offset: 6}}>
                 <Title>{ signupMode ? 'Please create an account!' : 'Please login to your account!' }</Title>
 
-                <p><Link onClick={() => setSignupMode(!signupMode)}>{ signupMode ? 'Log In' : 'Sing Up' }</Link></p> 
+                <p>{ signupMode ? 'Already have an account?' : 'Don\'t have an account?' } <Link onClick={() => setSignupMode(!signupMode)}>{ signupMode ? 'Log In' : 'Sing Up' }</Link></p> 
                 {props.error && <p><Text type="danger">{ getErrorMessage(props.error.message) }</Text></p>} 
                 <Form
                     layout="vertical"

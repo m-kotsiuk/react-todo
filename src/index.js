@@ -12,11 +12,11 @@ import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import authReducer from './store/reducers/auth';
-import activeListReducer from './store/reducers/activeList';
+import listsReducer from './store/reducers/lists';
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  activeList: activeListReducer
+  lists: listsReducer
 });
 
 const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)));

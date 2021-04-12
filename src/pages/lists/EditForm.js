@@ -17,9 +17,11 @@ const EditForm = props => {
 
     const [form] = Form.useForm();
 
+    const { accessToken, userId } = props;
+
     useEffect(() => {
         axios
-            .get(`${FIREBASE_DB_URL}lists/${props.userId}/${id}.json?auth=${props.accessToken}`)
+            .get(`${FIREBASE_DB_URL}lists/${userId}/${id}.json?auth=${accessToken}`)
             .then(resp => {
                 setTitle(resp.data.title);
                 form.setFieldsValue({
@@ -31,7 +33,7 @@ const EditForm = props => {
             .catch(err => {
                 console.log(err);
             });
-    }, []);
+    }, [accessToken, userId, form, id]);
 
     
 
@@ -39,10 +41,10 @@ const EditForm = props => {
         const { title } = values; 
 
         axios
-            .patch(`${FIREBASE_DB_URL}lists/${props.userId}/${id}.json?auth=${props.accessToken}`, {
+            .patch(`${FIREBASE_DB_URL}lists/${userId}/${id}.json?auth=${accessToken}`, {
                 title
             })
-            .then(resp => {
+            .then(() => {
                 console.log('history', props.history.push('/list/' + id));
             })
             .catch(err => {
@@ -52,7 +54,7 @@ const EditForm = props => {
 
     return (
         <Row>
-            <Col xs={{span: 24}} md={{span: 12, offset: 6}}>
+            <Col xs={{span: 24}} md={{span: 12}}>
                 <Title>Edit list title</Title>
                 <Form
                     layout="vertical"

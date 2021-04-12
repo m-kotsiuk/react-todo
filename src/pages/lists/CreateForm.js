@@ -2,41 +2,26 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { createList } from '../../store/actions/activeList/index';
-
+import { listsActions } from '../../store/actions/index';
 
 import { Form, Input, Button, Typography, Row, Col } from 'antd';
-
-import axios from 'axios';
-
-import { FIREBASE_DB_URL } from '../../config';
 
 const { Title } = Typography;
 
 
 const CreateForm = props => {
 
+    const { history, userId, accessToken, onCreateList } = props;
+
     const onFinish = values => {
         const { title } = values; 
-
-        axios
-        .post(`${FIREBASE_DB_URL}lists/${props.userId}.json?auth=${props.accessToken}`, {
-            title,
-            userId: props.userId
-        })
-        .then(() => {
-           props.history.push('/');
-        })
-        .catch(err => {
-            console.log(err);
-        });
-        
+        onCreateList(userId, accessToken, title, history);
     };
 
 
     return (
-        <Row>
-            <Col xs={{span: 24}} md={{span: 12, offset: 6}}>
+        <Row justify="start">
+            <Col xs={{span: 24}} md={{span: 12}}>
                 <Title>Create a new list</Title>
                 <Form
                     layout="vertical"
@@ -75,4 +60,12 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps)(CreateForm);
+const mapDispatchToProps = dispatch => {
+    return {
+        onCreateList: (userId, accessToken, listTitle, history) => dispatch(listsActions.createList(userId, accessToken, listTitle, history))
+    };
+};
+  
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateForm);
