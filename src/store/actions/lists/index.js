@@ -29,6 +29,21 @@ const createListFailed = () => {
 };
 
 
+const editListSuccess = list => {
+    return {
+        type: types.LIST_EDIT_SUCCESS,
+        list
+    }
+};
+
+const editListFailed = () => {
+    return {
+        type: types.LIST_EDIT_FAILED
+    }
+};
+
+
+
 const deleteListSuccess = listId => {
     return {
         type: types.LIST_DELETE_SUCCESS,
@@ -42,12 +57,27 @@ const deleteListFailed = () => {
     }
 };
 
-const createListItemSuccess = (listId, listItemId) => {
+const createListItemSuccess = payload => {
+    const {listId, listItem} = payload;
     return {
         type: types.LIST_ITEM_CREATE_SUCCESS,
         listId,
-        listItemId
+        listItem
     }
+};
+
+const editListItemSuccess = payload => {
+
+    return {
+        type: types.LIST_ITEM_EDIT_SUCCESS,
+        ...payload
+    };
+};
+
+const editListItemFailed = () => {
+    return {
+        type: types.LIST_ITEM_EDIT_FAILED
+    };
 };
 
 const createListItemFailed = () => {
@@ -56,11 +86,12 @@ const createListItemFailed = () => {
     }
 };
 
-const deleteListItemSuccess = (listId, itemId) => {
+const deleteListItemSuccess = payload => {
+    const {listId, listItemId} = payload; 
     return {
         type: types.LIST_ITEM_DELETE_SUCCESS,
         listId,
-        itemId
+        listItemId
     }
 };
 
@@ -83,12 +114,34 @@ export const createListItem = (userId, accessToken, listId, params, history) => 
                     ...params
                 }
             }));
+            
             history.push('/list/' + listId);
         })
         .catch(() => {
             dispatch(createListItemFailed());
             history.push('/');
         });
+    }
+
+};
+
+export const editListItem = (userId, accessToken, listId, itemId, params, history) => {
+    return dispatch => {
+        axios
+            .put(`${FIREBASE_DB_URL}lists/${userId}/${listId}/items/${itemId}.json?auth=${accessToken}`, {
+                ...params
+            })
+            .then(() => {
+               history.push('/list/' + listId);
+               dispatch(editListItemSuccess({
+                   listId,
+                   itemId,
+                   ...params
+               }));
+            })
+            .catch(( )=> {
+                dispatch(editListItemFailed());
+            });
     }
 
 };
@@ -108,6 +161,7 @@ export const createList = (userId, accessToken, title, history) => {
                     userId,
                     items: null
                 }));
+
                 history.push('/');
             })
             .catch(() => {
@@ -116,6 +170,26 @@ export const createList = (userId, accessToken, title, history) => {
             });
     }
     
+};
+
+export const editList = (userId, accessToken, id, title, history) => {
+    return dispatch => {
+        axios
+            .patch(`${FIREBASE_DB_URL}lists/${userId}/${id}.json?auth=${accessToken}`, {
+                title
+            })
+            .then(() => {
+                dispatch(editListSuccess({
+                    id,
+                    title
+                }));
+
+                history.push('/list/' + id);
+            })
+            .catch(() => {
+               dispatch(editListFailed());
+            });
+    };
 };
 
 
@@ -158,7 +232,7 @@ export const fetchLists = (userId, accessToken) => {
 export const deleteList = (userId, accessToken, listId, history) => {
     return dispatch => {
         axios
-            .delete(`${FIREBASE_DB_URL}lists/${userId}/${listId}.json?auth=${accessToken}`)
+            .delete(`${FIREBASE_DB_URL}/lists/${userId}/${listId}.json?auth=${accessToken}`)
             .then(() => {
                 dispatch(deleteListSuccess(listId));
                 history.push('/');
@@ -175,7 +249,7 @@ export const deleteListItem = (userId, accessToken, listId, listItemId) => {
         axios
             .delete(`${FIREBASE_DB_URL}lists/${userId}/${listId}/items/${listItemId}.json?auth=${accessToken}`)
             .then(() => {
-                dispatch(deleteListItemSuccess(listId, listItemId));
+                dispatch(deleteListItemSuccess({listId, listItemId}));
             })
             .catch(() => {
                 dispatch(deleteListItemFailed());

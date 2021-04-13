@@ -36,7 +36,6 @@ const SingleList = props => {
     const options = itemId => {
 
         const deleteTask = () => {
-            console.log('DELETING', userId, accessToken, id, itemId);
             onDeleteListItem(userId, accessToken, id, itemId)
         };
 

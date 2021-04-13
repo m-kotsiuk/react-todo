@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router';
 
 import { Form, Input, Select, Button } from 'antd';
-import axios from 'axios';
 import { connect } from 'react-redux';
-import { FIREBASE_DB_URL } from '../../config';
+
+import { listsActions } from '../../store/actions';
 
 
 const { Option } = Select;
@@ -15,38 +15,22 @@ const EditListItemForm = props => {
 
     const [form] = Form.useForm();
 
-    const { accessToken, userId } = props;
+    const { accessToken, userId, onEditListItem, history, lists } = props;
 
-    useEffect(() => {
-        axios
-            .get(`${FIREBASE_DB_URL}lists/${userId}/${id}/items/${itemId}.json?auth=${accessToken}`)
-            .then(resp => {
-                const { heading, description, status } = resp.data;
+    const targetList = lists[lists.findIndex(el => el.id === id)];
 
-                form.setFieldsValue({
-                    heading, 
-                    description, 
-                    status
-                });
+    const targetItem = targetList.items[ targetList.items.findIndex(el => el.id === itemId)];
 
-                
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }, [accessToken, userId, id, itemId, form]);
+    const { heading, description, status } = targetItem;
+
+    form.setFieldsValue({
+        heading, 
+        description, 
+        status
+    });
 
     const onFinish = values => {
-        axios
-            .put(`${FIREBASE_DB_URL}lists/${props.userId}/${id}/items/${itemId}.json?auth=${props.accessToken}`, {
-                ...values
-            })
-            .then(() => {
-                props.history.push('/list/' + id);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        onEditListItem(userId, accessToken, id, itemId, values, history);
     };
 
 
@@ -113,9 +97,15 @@ const EditListItemForm = props => {
 const mapStateToProps = state => {
     return {
         userId: state.auth.userId,
-        accessToken: state.auth.token
+        accessToken: state.auth.token,
+        lists: state.lists.lists
     }
 };
 
+const mapDispatchToProps = dispatch => {
+    return {
+        onEditListItem: (userId, accessToken, listId, itemId, params, history) => dispatch(listsActions.editListItem(userId, accessToken, listId, itemId, params, history))
+    };
+};
 
-export default connect(mapStateToProps)(EditListItemForm)
+export default connect(mapStateToProps, mapDispatchToProps)(EditListItemForm)

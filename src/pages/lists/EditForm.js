@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router';
-import axios from 'axios';
 import { connect } from 'react-redux';
 
+import { listsActions } from '../../store/actions/index';
+
 import { Form, Input, Button, Typography, Row, Col } from 'antd';
-import { FIREBASE_DB_URL } from '../../config';
 
 const { Title } = Typography;
 
@@ -13,43 +13,20 @@ const EditForm = props => {
 
     const { id } = useParams();
 
-    const [title, setTitle] = useState('');
-
     const [form] = Form.useForm();
 
-    const { accessToken, userId } = props;
+    const { accessToken, userId, onEditList, lists, history } = props;
 
-    useEffect(() => {
-        axios
-            .get(`${FIREBASE_DB_URL}lists/${userId}/${id}.json?auth=${accessToken}`)
-            .then(resp => {
-                setTitle(resp.data.title);
-                form.setFieldsValue({
-                    title: resp.data.title
-                });
+    console.log(lists.findIndex(el => el.id === id));
 
-                
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }, [accessToken, userId, form, id]);
-
-    
+    form.setFieldsValue({
+        title: lists[lists.findIndex(el => el.id === id)].title
+    });
 
     const onFinish = values => {
         const { title } = values; 
 
-        axios
-            .patch(`${FIREBASE_DB_URL}lists/${userId}/${id}.json?auth=${accessToken}`, {
-                title
-            })
-            .then(() => {
-                console.log('history', props.history.push('/list/' + id));
-            })
-            .catch(err => {
-
-        });
+        onEditList(userId, accessToken, id, title, history);
     };
 
     return (
@@ -59,9 +36,9 @@ const EditForm = props => {
                 <Form
                     layout="vertical"
                     onFinish={onFinish}
-                    initialValues={{
-                        title
-                    }}
+                    initialValues={
+                        lists[lists.findIndex(el => el.id === id)].title
+                    }
                     noValidate
                     form={form}
                 >
@@ -92,8 +69,15 @@ const EditForm = props => {
 const mapStateToProps = state => {
     return {
         userId: state.auth.userId,
-        accessToken: state.auth.token
+        accessToken: state.auth.token,
+        lists: state.lists.lists
     }
 };
 
-export default connect(mapStateToProps)(EditForm);
+const mapDispatchToProps = dispatch => {
+    return {
+        onEditList: (userId, accessToken, id, title, history) => dispatch(listsActions.editList(userId, accessToken, id, title, history))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditForm);

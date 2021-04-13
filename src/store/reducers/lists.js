@@ -31,9 +31,32 @@ const createList = (state, action) => {
     }
 };
 
-const deleteList = (state, action) => {
+const editList = (state, action) => {
+    const { list } = action;
+    const lists = [...state.lists];
 
-    return state;
+    const targetIndex = lists.findIndex(el => el.id === list.id);
+
+    lists[targetIndex].title = list.title;
+
+    return {
+        ...state,
+        lists
+    }
+};
+
+const deleteList = (state, action) => {
+    const { listId } = action;
+    const lists = [...state.lists];
+
+    const targetIndex = lists.findIndex(el => el.id === listId);
+    
+    lists.splice(targetIndex, 1);
+
+    return {
+        ...state,
+        lists
+    };
 };
 
 
@@ -41,15 +64,41 @@ const deleteList = (state, action) => {
 
 const createListItem = (state, action) => {
 
+    const { listId, listItem } = action;
+
     const lists = [...state.lists];
 
-    const targetIndex = lists.findIndex(action.listId);
+    const targetIndex = lists.findIndex(el => el.id === listId);
 
     if (!lists[targetIndex].items) lists[targetIndex].items = [];
 
     lists[targetIndex].items.push({
-        ...action.listItem
+        ...listItem
     });
+
+    return {
+        ...state,
+        lists
+    }
+};
+
+const editListItem = (state, action) => {
+    const { listId, itemId, heading, status, description } = action;
+
+    const lists = [...state.lists];
+
+    const targetListIndex = lists.findIndex(el => el.id === listId);
+
+    const items = [...lists[targetListIndex].items];
+
+    const targetListItemIndex = items.findIndex(el => el.id === itemId);
+
+
+    items[targetListItemIndex].heading = heading;
+    items[targetListItemIndex].description = description;
+    items[targetListItemIndex].status = status;
+
+    lists[targetListIndex].items = items;
 
     return {
         ...state,
@@ -59,17 +108,21 @@ const createListItem = (state, action) => {
 
 
 const deleteListItem = (state, action) => {
-    const {listId, itemId} = action;
-    const lists = [...state.lists]
+    const { listId, listItemId } = action;
+    const lists = [...state.lists];
+
     const targetListIndex = lists.findIndex(el => el.id === listId);
+
     const items = [...lists[targetListIndex].items];
-    const targetListItemIndex = items.findIndex(el => el.id === itemId);
+
+    const targetListItemIndex = items.findIndex(el => el.id === listItemId);
     items.splice(targetListItemIndex,1);
 
-    lists[targetListIndex][items] = items;
+    lists[targetListIndex].items = items;
 
     return {
-        state
+        ...state,
+        lists
     }
     
 };
@@ -89,6 +142,10 @@ const reducer = (state = initialState, action) => {
             return deleteList(state, action);
         case types.LIST_ITEM_DELETE_SUCCESS:
             return deleteListItem(state, action);
+        case types.LIST_EDIT_SUCCESS:
+            return editList(state, action);
+        case types.LIST_ITEM_EDIT_SUCCESS:
+            return editListItem(state, action);
         default:
             return state;
     }
